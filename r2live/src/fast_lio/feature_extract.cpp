@@ -21,10 +21,10 @@ enum E_jump{Nr_nor, Nr_zero, Nr_180, Nr_inf, Nr_blind};
 
 struct orgtype
 {
-  double range;
-  double dista; 
-  double angle[2];
-  double intersect;
+  double range; //点到lidar原点的xy平面距离
+  double dista; //与后一点间隔距离的平方
+  double angle[2];//
+  double intersect;//当前点与前后两点的夹角
   E_jump edj[2];
   Feature ftype;
   orgtype()
@@ -267,7 +267,7 @@ void velo16_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     }
 
     double ang = atan(ap.z / leng)*rad2deg;
-    scanID = int((ang + 15) / 2 + 0.5);
+    scanID = int((ang + 15) / 2 + 0.5); //按角度分线束
 
     if(scanID>=N_SCANS || scanID<0)
     {
@@ -302,11 +302,12 @@ void velo16_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 
   idx++;
 
+  //按单条线束作特征提取
   for(int j=0; j<N_SCANS; j++)
   {
     pcl::PointCloud<PointType> &pl = pl_buff[j];
     vector<orgtype> &types = typess[j];
-    pl.erase(pl.begin()+idx, pl.end());
+    pl.erase(pl.begin()+idx, pl.end()); //删除末端的点
     types.erase(types.begin()+idx, types.end());
     plsize = idx - 1;
     for(uint i=0; i<plsize; i++)
@@ -493,7 +494,7 @@ void oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
   pub_func(pl_corn, pub_corn, msg->header.stamp);
 }
 
-
+//线特征未启用
 void give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &types, pcl::PointCloud<PointType> &pl_corn, pcl::PointCloud<PointType> &pl_surf)
 {
   uint plsize = pl.size();
